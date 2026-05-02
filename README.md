@@ -1,8 +1,6 @@
 
 # Kyverno Policy Enforcement
 
-![Kyverno Logo](https://kyverno.io/img/logo.svg)
-
 ## Overview
 
 This repository contains a curated set of production-grade [Kyverno](https://kyverno.io/) policies and supporting manifests for Kubernetes clusters. Kyverno is a Kubernetes-native policy engine that helps you validate, mutate, and generate resources to ensure best practices, security, and compliance.
