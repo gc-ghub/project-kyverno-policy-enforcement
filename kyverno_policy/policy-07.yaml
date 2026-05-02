@@ -1,0 +1,17 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: enforce-replica-range
+spec:
+  validationFailureAction: Enforce
+  rules:
+    - name: validate-replicas
+      match:
+        resources:
+          kinds:
+            - Deployment
+      validate:
+        message: "Replicas must be between 2 and 4"
+        pattern:
+          spec:
+            replicas: ">=2 & <=4"
