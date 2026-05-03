@@ -9,11 +9,19 @@ This repository contains a curated set of production-grade [Kyverno](https://kyv
 - **Ready-to-use Kyverno policies** for common production scenarios
 - **Kind cluster configuration** for local testing
 - **Sample manifests** to test policy enforcement
+- **ArgoCD application manifests for GitOps deployment**
+- **Automated policy validation with GitHub Actions**
 - **Step-by-step installation and usage guide**
 
 ## Folder Structure
 
 ```
+├── argocd/                 # ArgoCD application manifests
+│   ├── app-manifests.yaml
+│   └── kyverno-argocd-app.yaml
+├── .github/
+│   └── workflows/
+│       └── policy_validation.yaml   # GitHub Actions workflow for policy validation
 ├── kind_cluster/           # Kind cluster configuration
 │   └── kind-config.yaml
 ├── kyverno_install/        # Kyverno installation instructions
@@ -21,10 +29,13 @@ This repository contains a curated set of production-grade [Kyverno](https://kyv
 ├── kyverno_policy/         # Kyverno policy YAMLs
 │   ├── policy-01.yaml
 │   ├── policy-02.yaml
-│   └── ...
+│   ├── policy-03.yaml
+│   ├── policy-04.yaml
+│   ├── policy-05.yaml
+│   ├── policy-06.yaml
+│   └── policy-07.yaml
 ├── manifests/              # Test manifests for policy validation
-│   ├── deployment_failed.yaml
-│   ├── deployment_passed.yaml
+│   ├── deployment.yaml
 │   └── namespace.yaml
 └── README.md               # Project documentation
 ```
@@ -42,7 +53,7 @@ kind create cluster --config kind_cluster/kind-config.yaml
 ```
 
 ### 3. Install Kyverno
-Follow the instructions in `kyverno_install/install.txt` or run:
+Follow the instructions in `kyverno_install/install.txt` (Helm-based) or run:
 ```sh
 kubectl create -f https://raw.githubusercontent.com/kyverno/kyverno/main/config/release/install.yaml
 ```
@@ -52,28 +63,42 @@ kubectl create -f https://raw.githubusercontent.com/kyverno/kyverno/main/config/
 kubectl apply -f kyverno_policy/
 ```
 
-### 5. Test Policy Enforcement
-Apply the test manifests to see policy enforcement in action:
+### 5. Deploy with ArgoCD (Optional)
+If you use [ArgoCD](https://argo-cd.readthedocs.io/), you can deploy the application and policies using the manifests in the `argocd/` folder:
+
 ```sh
-kubectl apply -f manifests/deployment_passed.yaml   # Should pass
-kubectl apply -f manifests/deployment_failed.yaml   # Should be blocked
+# Create ArgoCD Applications
+kubectl apply -f argocd/app-manifests.yaml
+kubectl apply -f argocd/kyverno-argocd-app.yaml
 ```
 
-## Policy List
-- **policy-01.yaml**: [require-resources]
-- **policy-02.yaml**: [disallow-latest-tag]
-- **policy-03.yaml**: [create-resourcequota]
-- **policy-04.yaml**: [add-team-label]
-- **policy-05.yaml**: [restrict-image-registries]
-- **policy-06.yaml**: [enforce-security-context]
-- **policy-07.yaml**: [enforce-replica-range]
+### 6. Test Policy Enforcement
+Apply the test manifests to see policy enforcement in action:
+```sh
+kubectl apply -f manifests/deployment.yaml   # Should be validated by policies
+kubectl apply -f manifests/namespace.yaml    # Should be validated by policies
+```
 
-> _Update the above with specific policy details as needed._
+### 7. Automated Policy Validation (CI)
+On every pull request to `main`, [GitHub Actions](https://github.com/features/actions) will automatically validate your manifests against the Kyverno policies using the workflow in `.github/workflows/policy_validation.yaml`.
+
+Artifacts and validation results are uploaded for review in the PR.
+
+## Policy List
+- **policy-01.yaml**: Enforces CPU and memory requests/limits for all containers.
+- **policy-02.yaml**: Disallows use of the `latest` image tag.
+- **policy-03.yaml**: Automatically generates a `ResourceQuota` for each namespace.
+- **policy-04.yaml**: Adds a `team: platform` label to all Pods.
+- **policy-05.yaml**: Restricts images to only those from `docker.io` registry.
+- **policy-06.yaml**: Enforces `runAsNonRoot` and disables privilege escalation for containers.
+- **policy-07.yaml**: Ensures Deployments have replicas between 2 and 4.
 
 ## Resources
 - [Kyverno Documentation](https://kyverno.io/docs/)
 - [Kyverno Policy Library](https://kyverno.io/policies/)
 - [Kubernetes Documentation](https://kubernetes.io/docs/)
+- [ArgoCD Documentation](https://argo-cd.readthedocs.io/)
+- [GitHub Actions Documentation](https://docs.github.com/en/actions)
 
 ## License
 

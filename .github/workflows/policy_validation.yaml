@@ -24,6 +24,7 @@ jobs:
       - name: Validate Kubernetes manifests against policies
         run: |
           echo "🔍 Running Kyverno policy validation..."
+          echo "----------------------------------------"
 
           set -o pipefail
 
@@ -31,7 +32,34 @@ jobs:
             --resource manifests/deployment.yaml \
             --resource manifests/namespace.yaml \
             --policy-report \
-            --output table | tee kyverno-report.txt
+            | tee kyverno-report.txt
+
+          echo ""
+          echo "📊 ===== SUMMARY ====="
+
+          echo ""
+          echo "Result Counts:"
+          grep "result:" kyverno-report.txt | sort | uniq -c || true
+
+          echo ""
+          echo "❌ FAILED RULES:"
+          grep -A 3 "result: fail" kyverno-report.txt || echo "No failures 🎉"
+
+          echo ""
+          echo "✅ PASSED RULES:"
+          grep -A 2 "result: pass" kyverno-report.txt || echo "No passes found"
+
+          echo ""
+          echo "----------------------------------------"
+
+      - name: Fail if policy violations found
+        run: |
+          if grep -q "result: fail" kyverno-report.txt; then
+            echo "❌ Policy violations detected. Failing pipeline."
+            exit 1
+          else
+            echo "✅ All policies passed successfully."
+          fi
 
       - name: Upload Kyverno Report (Artifact)
         if: always()
