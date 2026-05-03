@@ -1,4 +1,5 @@
 ## this is intentional bad deployment to test kyverno policies. 
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: nginx-deployment
