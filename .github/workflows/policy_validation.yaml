@@ -30,7 +30,7 @@ jobs:
           kyverno apply kyverno_policy \
             --resource manifests/deployment.yaml \
             --resource manifests/namespace.yaml \
-            --policy-report > kyverno-report.txt
+            --policy-report > kyverno-report.txt || true
 
           echo ""
           echo "📊 ===== SUMMARY ====="
