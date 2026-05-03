@@ -1,0 +1,41 @@
+name: Policy Validation
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Install Kyverno CLI
+        run: |
+          KYVERNO_VERSION=v1.11.0
+          curl -LO https://github.com/kyverno/kyverno/releases/download/${KYVERNO_VERSION}/kyverno-cli_${KYVERNO_VERSION}_linux_x86_64.tar.gz
+          tar -xvf kyverno-cli_${KYVERNO_VERSION}_linux_x86_64.tar.gz
+          sudo mv kyverno /usr/local/bin/
+          kyverno version
+
+      - name: Validate Kubernetes manifests against policies
+        run: |
+          echo "🔍 Running Kyverno policy validation..."
+
+          set -o pipefail
+
+          kyverno apply kyverno_policy \
+            --resource manifests/deployment.yaml \
+            --resource manifests/namespace.yaml \
+            --policy-report \
+            --output table | tee kyverno-report.txt
+
+      - name: Upload Kyverno Report (Artifact)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: kyverno-policy-report
+          path: kyverno-report.txt
