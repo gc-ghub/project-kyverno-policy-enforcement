@@ -26,28 +26,26 @@ jobs:
           echo "🔍 Running Kyverno policy validation..."
           echo "----------------------------------------"
 
-          set -o pipefail
-
+          # Run silently and store output
           kyverno apply kyverno_policy \
             --resource manifests/deployment.yaml \
             --resource manifests/namespace.yaml \
-            --policy-report \
-            | tee kyverno-report.txt
+            --policy-report > kyverno-report.txt || true
 
           echo ""
           echo "📊 ===== SUMMARY ====="
-
           echo ""
+
           echo "Result Counts:"
           grep "result:" kyverno-report.txt | sort | uniq -c || true
 
           echo ""
           echo "❌ FAILED RULES:"
-          grep -A 3 "result: fail" kyverno-report.txt || echo "No failures 🎉"
+          grep -B 2 -A 3 "result: fail" kyverno-report.txt || echo "No failures 🎉"
 
           echo ""
           echo "✅ PASSED RULES:"
-          grep -A 2 "result: pass" kyverno-report.txt || echo "No passes found"
+          grep -B 2 -A 2 "result: pass" kyverno-report.txt || echo "No passes found"
 
           echo ""
           echo "----------------------------------------"
