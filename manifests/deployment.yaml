@@ -4,7 +4,7 @@ metadata:
   name: nginx-deployment
   namespace: kyverno-demo
 spec:
-  replicas: 1
+  replicas: 3
   selector:
     matchLabels:
       app: nginx
@@ -13,11 +13,22 @@ spec:
       labels:
         app: nginx
     spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
       containers:
       - name: nginx
-        image: nginx:latest
+        image: docker.io/nginxinc/nginx-unprivileged:1.25
         ports:
         - containerPort: 80
-        
+        securityContext:
+          allowPrivilegeEscalation: false
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+          requests:
+            memory: "64Mi"
+            cpu: "250m"
         
         
