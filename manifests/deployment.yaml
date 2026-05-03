@@ -1,4 +1,4 @@
-apiVersion: apps/v1
+## this is intentional bad deployment to test kyverno policies. 
 kind: Deployment
 metadata:
   name: nginx-deployment
@@ -18,6 +18,4 @@ spec:
         image: nginx:latest
         ports:
         - containerPort: 80
-        
-        
         
